@@ -157,6 +157,42 @@ class LogTest(unittest.TestCase):
         self.assertEqual([c.hash for c in repo.log_topological()], hashes)
 
 
+class MergeTest(unittest.TestCase):
+    def setUp(self):
+        self.repo = make_repo()
+        self.repo.init("Alice")
+        self.root = self.repo.commit("root")
+        self.repo.create_branch("feature")
+
+    def test_merge_creates_two_parent_commit(self):
+        self.repo.switch("feature")
+        f = self.repo.commit("feature work")
+        self.repo.switch("main")
+        m = self.repo.commit("main work")
+        status, merge = self.repo.merge("feature")
+        self.assertEqual(status, "merged")
+        self.assertEqual(merge.parents, (m.hash, f.hash))
+        self.assertEqual(self.repo.branches["main"], merge.hash)
+        self.assertEqual({c.hash for c, _ in self.repo.ancestors(merge.hash)}, {m.hash, f.hash, self.root.hash})
+        self.assertIn(merge.hash, [c.hash for c in self.repo.search_keyword("merge")])
+
+    def test_already_up_to_date(self):
+        self.repo.commit("ahead")
+        self.assertEqual(self.repo.merge("feature")[0], "up-to-date")
+
+    def test_merge_errors(self):
+        with self.assertRaises(UnknownBranch):
+            self.repo.merge("nope")
+        with self.assertRaises(MiniGitError):
+            self.repo.merge("main")
+
+    def test_fast_forward_into_empty_branch(self):
+        self.repo.switch("empty", orphan=True)
+        status, c = self.repo.merge("main")
+        self.assertEqual(status, "fast-forward")
+        self.assertEqual(self.repo.branches["empty"], self.root.hash)
+
+
 class DagInvariantTest(unittest.TestCase):
     def test_graph_is_always_acyclic(self):
         import random
@@ -173,6 +209,10 @@ class DagInvariantTest(unittest.TestCase):
                 branches.append(name)
             elif op < 0.35:
                 repo.switch(rng.choice(branches))
+            elif op < 0.45:
+                other = rng.choice(branches)
+                if other != repo.head:
+                    repo.merge(other)
             else:
                 repo.commit("c{}".format(i))
         order = [c.hash for c in repo.log_topological()]  # 사이클이 있으면 CycleError

@@ -109,6 +109,25 @@ class CommandBehaviourTest(unittest.TestCase):
         self.assertEqual(self.r.execute("branch"),
                          ["  feature      0000002 Add login feature", "* main         0000003 Add payment feature"])
 
+    def test_merge_command(self):
+        out = self.r.execute("merge feature")
+        self.assertEqual(out[0], "[main 0000004] Merge branch 'feature' into main")
+        self.assertEqual(out[1], "Parents: 0000003 (HEAD), 0000002 (feature)")
+        self.assertIn("Merge: 0000003 0000002", self.r.execute("log"))
+        self.assertEqual(self.r.execute("merge feature"), ["Already up to date."])
+
+    def test_diff_command(self):
+        with tempfile.TemporaryDirectory() as d:
+            a, b = os.path.join(d, "a.txt"), os.path.join(d, "b.txt")
+            with open(a, "w", encoding="utf-8") as f:
+                f.write("one\ntwo\nthree\n")
+            with open(b, "w", encoding="utf-8") as f:
+                f.write("one\nTWO\nthree\nfour\n")
+            out = self.r.execute('diff "{}" "{}"'.format(a, b))
+            self.assertEqual(out[2:], ["  one", "- two", "+ TWO", "  three", "+ four",
+                                       "Summary: 2 common, 1 removed, 2 added"])
+            self.assertTrue(self.r.execute("diff {} nope.txt".format(a))[0].startswith("File not found"))
+
 
 class ReplTest(unittest.TestCase):
     def test_piped_transcript_and_exit(self):

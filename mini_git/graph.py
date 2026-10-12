@@ -60,6 +60,11 @@ def ancestors(start: str, parents_of: Neighbors) -> List[Tuple[str, int]]:
     return order
 
 
+def is_ancestor(candidate: str, descendant: str, parents_of: Neighbors) -> bool:
+    """``candidate`` 가 ``descendant`` 의 조상(또는 자기 자신)인가. MERGE 의 'Already up to date' 판단에 쓴다."""
+    return candidate in bfs_distances(descendant, parents_of)
+
+
 def shortest_path(source: str, target: str, neighbors_of: Neighbors) -> Optional[List[str]]:
     """간선 수가 최소인 경로. 여러 개면 ``"h1->h2->..."`` 문자열이 사전순으로 가장 작은 경로.
 
