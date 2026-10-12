@@ -60,9 +60,35 @@ def ancestors(start: str, parents_of: Neighbors) -> List[Tuple[str, int]]:
     return order
 
 
-def is_ancestor(candidate: str, descendant: str, parents_of: Neighbors) -> bool:
-    """``candidate`` 가 ``descendant`` 의 조상(또는 자기 자신)인가. MERGE 의 'Already up to date' 판단에 쓴다."""
-    return candidate in bfs_distances(descendant, parents_of)
+def is_ancestor(candidate: str, descendant: str, parents_of: Neighbors,
+                generation_of: Optional[Callable[[str], int]] = None) -> bool:
+    """``candidate`` 가 ``descendant`` 의 조상(또는 자기 자신)인가. MERGE 의 'Already up to date' 판단에 쓴다.
+
+    ``descendant`` 에서 부모 방향으로 BFS 를 하다가 ``candidate`` 를 만나면 바로 True 를 반환한다.
+
+    generation number 가지치기(선택)
+        generation(커밋) = 1 + max(부모들의 generation), 루트는 1.
+        어떤 커밋 X 의 generation 이 candidate 보다 작으면, X 의 조상은 모두 그보다 더 작으므로
+        X 아래로는 candidate 가 있을 수 없다 → 더 내려가지 않는다.
+        실제 Git 의 commit-graph 가 쓰는 방법이며, 커밋이 많아질 때 탐색량을 크게 줄인다.
+    """
+    if candidate == descendant:
+        return True
+    floor = generation_of(candidate) if generation_of else None
+    seen = {descendant}
+    queue = deque([descendant])
+    while queue:
+        node = queue.popleft()
+        for parent in parents_of(node):
+            if parent == candidate:
+                return True
+            if parent in seen:
+                continue
+            if floor is not None and generation_of(parent) < floor:
+                continue  # 이 아래에는 candidate 가 있을 수 없다
+            seen.add(parent)
+            queue.append(parent)
+    return False
 
 
 def shortest_path(source: str, target: str, neighbors_of: Neighbors) -> Optional[List[str]]:

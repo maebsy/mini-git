@@ -82,6 +82,20 @@ class AncestorsTest(unittest.TestCase):
         self.assertEqual(graph.ancestors("m", parents.__getitem__), [("a", 1), ("b", 1), ("r", 2)])
 
 
+class IsAncestorTest(unittest.TestCase):
+    def test_generation_pruning_matches_brute_force(self):
+        rng = random.Random(21)
+        for _ in range(60):
+            names, parents, _ = random_dag(rng, rng.randint(1, 30), max_parents=3)
+            gen = {}
+            for name in names:  # names 는 위상 순서(부모가 앞)로 생성된다
+                gen[name] = 1 + max((gen[p] for p in parents[name]), default=0)
+            a, b = rng.choice(names), rng.choice(names)
+            expected = a == b or a in brute_force_ancestors(b, parents)
+            self.assertEqual(graph.is_ancestor(a, b, parents.__getitem__), expected)
+            self.assertEqual(graph.is_ancestor(a, b, parents.__getitem__, gen.__getitem__), expected)
+
+
 class ShortestPathTest(unittest.TestCase):
     def test_matches_brute_force_lexicographic_minimum(self):
         rng = random.Random(9)

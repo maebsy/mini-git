@@ -69,6 +69,7 @@ class Repository:
         self.user = ""
         self.commits: Dict[str, Commit] = {}
         self.children: Dict[str, List[str]] = {}
+        self.generation: Dict[str, int] = {}  # 루트=1, 그 외 1 + max(부모) — 조상 판정 가지치기용
         self.branches: Dict[str, Optional[str]] = {}
         self.head = self.DEFAULT_BRANCH
         self.index = InvertedIndex()
@@ -102,6 +103,7 @@ class Repository:
         # 저장 → 그래프 역방향 간선 → 브랜치 이동 → 역색인 갱신 (커밋 생성과 같은 시점)
         self.commits[h] = commit
         self.children[h] = []
+        self.generation[h] = 1 + max((self.generation[p] for p in parents), default=0)
         for p in parents:
             self.children[p].append(h)
         self.branches[self.head] = h
@@ -181,7 +183,7 @@ class Repository:
         if ours is None:
             self.branches[self.head] = theirs
             return "fast-forward", self.commits[theirs]
-        if graph.is_ancestor(theirs, ours, self.parents_of):
+        if graph.is_ancestor(theirs, ours, self.parents_of, self.generation.__getitem__):
             return "up-to-date", None
         message = "Merge branch '{}' into {}".format(branch, self.head)
         return "merged", self._new_commit(message, [ours, theirs])
