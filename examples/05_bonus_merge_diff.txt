@@ -1,0 +1,15 @@
+# [보너스] MERGE 와 DIFF
+# 실행: python main.py --hash-mode counter --fake-time "2024-01-15 09:00:00" --time-step 900 < examples/05_bonus_merge_diff.txt
+init Alice
+commit "Initial commit"
+branch feature
+switch feature
+commit "Add login feature"
+switch main
+commit "Add payment feature"
+merge feature
+log
+ancestors main
+merge feature
+diff examples/data/calc_v1.py examples/data/calc_v2.py
+diff examples/data/calc_v1.py examples/data/missing.py

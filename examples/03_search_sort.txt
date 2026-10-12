@@ -1,0 +1,25 @@
+# 여러 작성자의 커밋을 역색인으로 검색하고 직접 구현한 정렬로 LOG 정렬
+# 실행: python main.py --hash-mode counter --fake-time "2024-01-15 09:00:00" --time-step 900 < examples/03_search_sort.txt
+init Carol
+commit "Initial commit"
+user Bob
+commit "Add login feature"
+user Alice
+commit "Fix login bug"
+user Bob
+commit "Add payment feature"
+user Alice
+commit "Refactor payment module"
+search login
+search "add feature"
+search --author=alice
+search --author="Bob"
+search nothing
+log --sort-by=date
+log --sort-by=author
+# --algo 로 정렬 알고리즘 교체 (merge·quick·heap·insertion). 결과 비교와 안정성 실험은 scripts/benchmark_sort.py
+log --sort-by=author --algo=quick
+# 작성자순을 따르되 부모-자식 순서는 지키는 우선순위 위상 정렬 (확장)
+# 이력이 일직선이라 모든 커밋이 앞 커밋의 자식 → 작성자순보다 부모 우선 제약이 이긴다
+log --sort-by=author --topo
+status

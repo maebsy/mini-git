@@ -1,0 +1,33 @@
+# 브랜치 3개 + merge 로 만든 DAG 에서 LOG / PATH / ANCESTORS
+#
+# main     0000001 ─ 0000002 ──────────────────── 0000006 (merge)
+#                         \                       /
+# feature                  0000003 ─ 0000004 ───┴── 0000007 (merge)
+#                               \                    /
+# hotfix                         0000005 ───────────┘
+#
+# 실행: python main.py --hash-mode counter --fake-time "2024-01-15 09:00:00" --time-step 900 < examples/02_graph.txt
+init Alice
+commit "Initial commit"
+commit "Add README"
+branch feature
+switch feature
+commit "Add login API"
+branch hotfix
+commit "Add login form"
+switch hotfix
+commit "Fix login timeout"
+switch main
+merge feature
+switch feature
+merge hotfix
+log
+ancestors 0000007
+ancestors 0000001
+path 0000005 0000002
+path 0000004 0000004
+# orphan 브랜치는 기존 그래프와 연결되지 않은 새 루트 → No path
+switch --orphan docs
+commit "Docs site skeleton"
+path 0000001 0000008
+branch

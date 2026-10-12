@@ -1,0 +1,15 @@
+# 표준 에러 메시지
+# 실행: python main.py --hash-mode counter --fake-time "2024-01-15 09:00:00" --time-step 900 < examples/04_errors.txt
+commit "before init"
+init Alice
+commit
+commit "unbalanced
+switch nope
+branch feature
+commit "first"
+branch feature
+ancestors deadbeef
+path 0000001
+log --sort-by=size
+search --author=
+frobnicate

@@ -1,0 +1,13 @@
+# 과제 결과 예시와 같은 흐름
+# 실행: python main.py --hash-mode counter --fake-time "2024-01-15 09:00:00" --time-step 900 < examples/01_mission_example.txt
+init "Alice"
+commit "Initial commit"
+branch feature
+switch feature
+commit "Add login feature"
+switch main
+commit "Add payment feature"
+log
+path 0000001 0000003
+search "login"
+log --sort-by=author
