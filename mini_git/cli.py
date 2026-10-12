@@ -13,6 +13,7 @@ COMMIT / SEARCH / INIT / USER 처럼 자유 문자열을 받는 명령은 따옴
 
 from typing import Callable, Dict, List, Optional, Tuple
 
+from . import diff as diff_mod
 from . import sorting
 from .models import Commit
 from .repository import InvalidArgs, MiniGitError, Repository
@@ -123,6 +124,8 @@ class CommandRunner:
             "ancestors": self.cmd_ancestors,
             "search": self.cmd_search,
             "status": self.cmd_status,
+            "merge": self.cmd_merge,
+            "diff": self.cmd_diff,
             "help": self.cmd_help,
         }
 
@@ -263,6 +266,30 @@ class CommandRunner:
             return format_search(self.repo.search_author(options["author"]))
         return format_search(self.repo.search_keyword(self._free_text(positional)))
 
+    # ------------------------------------------------------------ 보너스
+    def cmd_merge(self, args: List[str]) -> List[str]:
+        if len(args) != 1:
+            raise InvalidArgs()
+        status, c = self.repo.merge(args[0])
+        if status == "up-to-date":
+            return ["Already up to date."]
+        if status == "fast-forward":
+            return ["Fast-forward: {} -> {}".format(self.repo.head, c.hash)]
+        return ["[{} {}] {}".format(self.repo.head, c.hash, c.message),
+                "Parents: {} (HEAD), {} ({})".format(c.parents[0], c.parents[1], args[0])]
+
+    def cmd_diff(self, args: List[str]) -> List[str]:
+        if len(args) != 2:
+            raise InvalidArgs()
+        try:
+            a = diff_mod.read_lines(args[0])
+            b = diff_mod.read_lines(args[1])
+        except FileNotFoundError as exc:
+            raise MiniGitError("File not found: {}".format(exc.filename))
+        except (OSError, UnicodeDecodeError) as exc:
+            raise MiniGitError("Cannot read file: {}".format(exc))
+        return diff_mod.render_diff(args[0], args[1], diff_mod.diff_lines(a, b))
+
     def cmd_help(self, args: List[str]) -> List[str]:
         return HELP_TEXT.splitlines()
 
@@ -284,6 +311,9 @@ HELP_TEXT = """\
 # 검색 (역색인)
   SEARCH <keyword>                  메시지 키워드 검색 (여러 단어는 AND)
   SEARCH --author=<name>            작성자 검색
+# 보너스
+  MERGE <branch_name>               부모가 2개인 merge commit 생성
+  DIFF <file1> <file2>              두 텍스트 파일 줄 단위 비교
 # 기타
   HELP                              도움말
   EXIT | QUIT                       종료
