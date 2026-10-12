@@ -161,6 +161,31 @@ class Repository:
         parent = self.head_commit
         return self._new_commit(message, [parent] if parent else [])
 
+    def merge(self, branch: str) -> Tuple[str, Optional[Commit]]:
+        """[보너스] 대상 브랜치를 현재 브랜치에 병합한다.
+
+        반환: (상태, 커밋) — 상태는 "merged" | "up-to-date" | "fast-forward"
+        * 대상이 현재 HEAD 의 조상이면 이미 반영됨 → 커밋 생성 안 함
+        * 현재 브랜치에 커밋이 없으면 대상 커밋으로 fast-forward
+        * 그 외에는 부모가 2개(현재 HEAD, 대상 HEAD)인 merge commit 생성
+        """
+        self._require_init()
+        if branch not in self.branches:
+            raise UnknownBranch(branch)
+        if branch == self.head:
+            raise MiniGitError("Cannot merge a branch into itself: {}".format(branch))
+        theirs = self.branches[branch]
+        ours = self.head_commit
+        if theirs is None:
+            raise MiniGitError("Nothing to merge: branch '{}' has no commits".format(branch))
+        if ours is None:
+            self.branches[self.head] = theirs
+            return "fast-forward", self.commits[theirs]
+        if graph.is_ancestor(theirs, ours, self.parents_of):
+            return "up-to-date", None
+        message = "Merge branch '{}' into {}".format(branch, self.head)
+        return "merged", self._new_commit(message, [ours, theirs])
+
     # ================================================================ 조회
     def resolve(self, ref: str) -> str:
         """참조 문자열을 커밋 hash 로 바꾼다.
