@@ -20,6 +20,7 @@ insertion_sort      n           n²          n²         O(1)         ✅ (거�
 =================  ==========  ==========  =========  ===========  =========================
 """
 
+import random
 from typing import Any, Callable, Iterable, List, Optional, Tuple
 
 KeyFunc = Optional[Callable[[Any], Any]]
@@ -86,16 +87,20 @@ def merge_sort(items: Iterable[Any], key: KeyFunc = None, reverse: bool = False)
 def quick_sort(items: Iterable[Any], key: KeyFunc = None, reverse: bool = False) -> List[Any]:
     """퀵 정렬 (불안정). 피벗을 기준으로 작은 / 같은 / 큰 구간으로 나눈다(3-way partition).
 
-    * 피벗: 처음·중간·끝의 중앙값(median-of-three) → 이미 정렬된 입력에서 O(n²) 회피
+    * 피벗: 구간에서 무작위로 고른 세 원소의 중앙값(randomized median-of-three)
+      → 정렬된/역순 입력에서도 기대 O(n log n). 시드를 고정해 결과는 항상 같다.
+      (처음·중간·끝 고정 위치를 쓰면 3-way 분할이 남긴 특정 배치에서 최악에 빠질 수 있다)
     * 3-way 분할: 같은 키가 많아도(예: 작성자 몇 명) 구간이 줄어들지 않는 문제 방지
     * 작은 구간부터 처리하고 큰 구간은 반복문으로 → 스택 깊이 O(log n)
     """
     less = _make_less(reverse)
     arr = _decorate(items, key)
+    rng = random.Random(0x5EED)  # 고정 시드: 같은 입력이면 항상 같은 결과(재현성)
 
     def median_of_three(lo: int, hi: int) -> Any:
-        mid = (lo + hi) // 2
-        a, b, c = arr[lo][0], arr[mid][0], arr[hi][0]
+        a = arr[rng.randint(lo, hi)][0]
+        b = arr[rng.randint(lo, hi)][0]
+        c = arr[rng.randint(lo, hi)][0]
         if less(a, b):
             if less(b, c):
                 return b
