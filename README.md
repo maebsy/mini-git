@@ -227,7 +227,8 @@ mini-git/
 └── docs/
     ├── design.md              # 설계 문서
     ├── checklist.md           # 체크리스트 답변서
-    └── benchmark.md           # 성능 측정 결과
+    ├── benchmark.md           # 성능 측정 결과
+    └── presentation.html      # 동료 평가 발표 슬라이드
 ```
 
 ## 테스트와 성능 측정
@@ -258,6 +259,7 @@ python scripts/benchmark_repo.py
 | [`docs/design.md`](docs/design.md) | 구조, 커밋 그래프, 알고리즘별 설명, 역색인, 정렬, hash, 설계 결정 |
 | [`docs/checklist.md`](docs/checklist.md) | 미션 체크리스트 전 항목에 대한 근거와 답변 |
 | [`docs/benchmark.md`](docs/benchmark.md) | 정렬 알고리즘 비교(보너스), 커밋 수 증가 실험, 개선 전후 |
+| [`docs/presentation.html`](docs/presentation.html) | 동료 평가 발표 슬라이드 72장 (브라우저로 열기, ← → 넘기기 · N 발표자 노트 · 인쇄하면 PDF) |
 
 ## 범위
 
