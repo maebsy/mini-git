@@ -55,7 +55,7 @@ Found 1 commit:
 
 ## 빠른 시작
 
-외부 라이브러리 없이 Python 3.10 이상만 있으면 됩니다.
+외부 라이브러리 없이 Python 3.10 이상만 있으면 됩니다. 기준 버전은 3.14(`.python-version`)이고, [uv](https://docs.astral.sh/uv/) 를 쓰면 `uv run python ...` 으로 같은 버전에서 실행됩니다.
 
 ```bash
 git clone https://github.com/maebsy/mini-git.git
