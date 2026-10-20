@@ -238,6 +238,8 @@ python scripts/benchmark_sort.py
 python scripts/benchmark_repo.py
 ```
 
+검증 단계는 [`.github/workflows/tests.yml`](.github/workflows/tests.yml) 에 Python 3.10 ~ 3.14 로 정의되어 있고, `uv run scripts/ci_local.py` 로 같은 단계를 내 컴퓨터에서 Python 버전별로 그대로 실행할 수 있습니다 (커밋된 상태 기준, Linux·macOS).
+
 | 테스트 | 검증 내용 |
 | --- | --- |
 | `test_graph.py` | 위상 순서(무작위 DAG), 사이클 감지, 조상(DFS 정답 비교), 최단 경로(전수 탐색 정답 비교), generation 가지치기 |
